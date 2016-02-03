@@ -100,6 +100,10 @@ public class PushcrewClient {
         return new PushcrewResponses.SendResponse(client.newCall(postRequest("send/list", params)).execute());
     }
 
+    public PushcrewResponses.SendResponse sendToSubscriber(String title, String message, String url, String subscriber) throws IOException, PushcrewResponses.PushcrewException {
+        return sendToList(title, message, url, java.util.Arrays.asList(subscriber));
+    }
+
     public PushcrewResponses.NotificationStatus checkStatus(PushcrewResponse response) throws IOException, PushcrewResponses.PushcrewException {
         return checkStatus(response.getRequestId());
     }
