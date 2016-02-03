@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import okhttp3.*;
 
 public class PushcrewClient {
@@ -65,12 +67,28 @@ public class PushcrewClient {
         return authedReq().url(restEndpoint + path).post(body).build();
     }
 
-    public PushcrewResponses.SendToAllResponse sendToAll(String title, String message, String url) throws IOException, PushcrewResponses.PushcrewException {
+    public PushcrewResponses.SendResponse sendToAll(String title, String message, String url) throws IOException, PushcrewResponses.PushcrewException {
         Map<String,String> params = new java.util.HashMap<String,String>();
         params.put("title", title);
         params.put("message", message);
         params.put("url", url);
-        return new PushcrewResponses.SendToAllResponse(client.newCall(postRequest("send/all", params)).execute());
+        return new PushcrewResponses.SendResponse(client.newCall(postRequest("send/all", params)).execute());
+    }
+
+    public PushcrewResponses.SendResponse sendToList(String title, String message, String url, List<String> subscribers) throws IOException, PushcrewResponses.PushcrewException {
+        Map<String,String> params = new java.util.HashMap<String,String>();
+        params.put("title", title);
+        params.put("message", message);
+        params.put("url", url);
+
+        Map<String,Object> listObj = new HashMap<String,Object>();
+        listObj.put("subscriber_list", subscribers);
+        ObjectMapper mapper = new ObjectMapper();
+        String subscriberListJson = mapper.writeValueAsString(listObj);
+
+        params.put("subscriber_list", subscriberListJson);
+
+        return new PushcrewResponses.SendResponse(client.newCall(postRequest("send/list", params)).execute());
     }
 
     public PushcrewResponses.NotificationStatus checkStatus(PushcrewResponse response) throws IOException, PushcrewResponses.PushcrewException {

@@ -51,11 +51,11 @@ class PushcrewResponses {
         }
     }
 
-    public static class SendToAllResponse implements PushcrewResponse {
+    public static class SendResponse implements PushcrewResponse {
         public final long requestId;
         public final String status;
 
-        public SendToAllResponse(Response response) throws IOException, PushcrewException {
+        public SendResponse(Response response) throws IOException, PushcrewException {
             throwCommonExceptions(response);
             String body = response.body().string();
             ParsedJsonResponse parsed = new ParsedJsonResponse(body);
@@ -64,7 +64,7 @@ class PushcrewResponses {
         }
 
         public String toString() {
-            return "SendToAllResponse(" + getRequestId() + ", " + getStatus() + ")";
+            return "SendResponse(" + getRequestId() + ", " + getStatus() + ")";
         }
 
         public long getRequestId() { return requestId; }
@@ -82,8 +82,6 @@ class PushcrewResponses {
 
             JsonNode rootNode = (new ObjectMapper()).readTree(body);
 
-            System.out.println(body);
-            System.out.println(response.toString());
             countDelivered = rootNode.path("count_delivered").asLong();
             countClicked = rootNode.path("count_clicked").asLong();
         }
