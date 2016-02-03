@@ -55,9 +55,6 @@ object ApplicationBuild extends Build {
     val sprayLite = Seq(sprayHttp, sprayJson, sprayJsonLenses)
     val spray = sprayLite ++ Seq(sprayCan, sprayRouting, sprayCache, sprayTestkit)
 
-    val logbackCore      = "ch.qos.logback"        % "logback-core"               % "1.1.3"
-    val logback = Seq(logbackCore)
-
     val metrics          = "io.dropwizard.metrics" %  "metrics-core"              % "3.1.0"
     val metricsGraphite  = "io.dropwizard.metrics" %  "metrics-graphite"          % "3.1.0"
     val instrumentation = Seq(metrics, metricsGraphite)
@@ -66,7 +63,16 @@ object ApplicationBuild extends Build {
     val specs2           = "org.specs2"            %% "specs2-core"               % "2.4.17"  % "test"
     val testFrameworks = Seq(scalaCheck, specs2)
 
-    val commonDeps = Seq() ++ logback ++ testFrameworks
+    val slf4j = "org.slf4j" % "slf4j-api" % "1.7.14"
+    val logging = Seq(slf4j)
+    /*
+    // For debugging purposes
+    val logbackCore      = "ch.qos.logback"        % "logback-core"               % "1.1.3"
+    val logbackClassic   = "ch.qos.logback"        % "logback-classic"            % "1.1.3"
+    val logging = Seq(logbackCore, logbackClassic, slf4j)
+     */
+
+    val commonDeps = testFrameworks ++ logging
     val clientDeps = Seq(okHttp, jacksonJson)
   }
 

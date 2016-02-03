@@ -11,21 +11,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import okhttp3.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class PushcrewClient {
     public final String apiKey;
     public final String restEndpoint;
     public final URL restEndpointURL;
 
+    private Logger logger = LoggerFactory.getLogger("com.pushcrew.client");
+
     public PushcrewClient(String key, String endpoint) throws MalformedURLException {
         apiKey = key;
         restEndpoint = endpoint;
         restEndpointURL = new URL(restEndpoint);
+        logger.debug("Initialized pushcrew client");
     }
 
     public PushcrewClient(String key) throws MalformedURLException {
         apiKey = key;
         restEndpoint = "https://pushcrew.com/api/v1/";
         restEndpointURL = new URL(restEndpoint);
+        logger.debug("Initialized pushcrew client");
     }
 
     private final OkHttpClient client = new OkHttpClient();
@@ -64,6 +71,7 @@ public class PushcrewClient {
 
     private Request postRequest(String path, Map<String,String> params) {
         RequestBody body = RequestBody.create(FormEncoded, urlEncodeUTF8(params));
+        logger.debug("Creating post request for path {} with body {}", restEndpoint + path, urlEncodeUTF8(params));
         return authedReq().url(restEndpoint + path).post(body).build();
     }
 
@@ -72,6 +80,7 @@ public class PushcrewClient {
         params.put("title", title);
         params.put("message", message);
         params.put("url", url);
+        logger.info("Calling sendToAll at {}, title: {}, message: {}, url: {}", restEndpoint, title, message, url);
         return new PushcrewResponses.SendResponse(client.newCall(postRequest("send/all", params)).execute());
     }
 
@@ -87,7 +96,7 @@ public class PushcrewClient {
         String subscriberListJson = mapper.writeValueAsString(listObj);
 
         params.put("subscriber_list", subscriberListJson);
-
+        logger.info("Calling sendToList at {}, title: {}, message: {}, url: {}, subscriberList: {}", restEndpoint, title, message, url, subscribers);
         return new PushcrewResponses.SendResponse(client.newCall(postRequest("send/list", params)).execute());
     }
 
@@ -96,6 +105,7 @@ public class PushcrewClient {
     }
 
     public PushcrewResponses.NotificationStatus checkStatus(long requestId) throws IOException, PushcrewResponses.PushcrewException {
+        logger.info("Checking status of request {}", requestId);
         return new PushcrewResponses.NotificationStatus(client.newCall(getRequest("checkstatus/" + requestId)).execute());
     }
 }
