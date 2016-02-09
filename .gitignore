@@ -2,3 +2,4 @@ target/*
 project/target/*
 *~
 pushcrew_client/target/*
+project/project
