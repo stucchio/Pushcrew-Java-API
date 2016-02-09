@@ -14,7 +14,7 @@ object ApplicationBuild extends Build {
     resolvers ++= myResolvers,
     scalacOptions := Seq("-deprecation", "-target:jvm-1.7"),
     scalacOptions in Test ++= Seq("-Yrangepos"),
-    name := "pushcrew_client",
+    name := "rest_client",
     libraryDependencies ++= Dependencies.all,
     publishMavenStyle := true,
     crossPaths := false
