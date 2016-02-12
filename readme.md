@@ -18,7 +18,7 @@ import com.pushcrew.client.*;
 
 ...etc...
 
-PushcrewClient client = new PushcrewClient(apiKey);
+PushcrewClient client = PushcrewClientFactory.getClient(apiKey);
 
 PushcrewResponses.SendResponse response = client.sendToAll("title", "message", "http://www.pushcrew.com");
 
@@ -29,3 +29,7 @@ PushcrewResponses.SendResponse response = client.sendToList("title", "message", 
 System.out.println("There were " + response.countDelivered + " messages delivered and " + response.countClicked + " responses which were clicked.")
 
 ```
+
+## Testing
+
+`PushcrewClient` is simply an interface, so test code can safely implement a mock/stub version of it for testing purposes.
