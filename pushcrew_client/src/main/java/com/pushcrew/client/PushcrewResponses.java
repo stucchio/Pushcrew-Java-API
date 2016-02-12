@@ -8,21 +8,21 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 
-class PushcrewResponses {
+public class PushcrewResponses {
 
-    static class PushcrewException extends Exception {
+    public static class PushcrewException extends Exception {
         public PushcrewException(String message) {
             super(message);
         }
     }
 
-    static class Unauthorized extends PushcrewException {
+    public static class Unauthorized extends PushcrewException {
         public Unauthorized(String message) {
             super(message);
         }
     }
 
-    static class InvalidResponse extends PushcrewException {
+    public static class InvalidResponse extends PushcrewException {
         public InvalidResponse(String message) {
             super(message);
         }
