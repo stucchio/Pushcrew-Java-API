@@ -55,6 +55,11 @@ public class PushcrewResponses {
         public final long requestId;
         public final String status;
 
+        public SendResponse(long rid, String st) {
+            requestId = rid;
+            status = st;
+        }
+
         public SendResponse(Response response) throws IOException, PushcrewException {
             throwCommonExceptions(response);
             String body = response.body().string();
