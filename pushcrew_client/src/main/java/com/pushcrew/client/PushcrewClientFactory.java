@@ -213,7 +213,14 @@ public class PushcrewClientFactory {
             if (responseJson.path("status").equals("success")) {
                 return;
             } else {
-                throw new PushcrewResponses.PushcrewException(responseJson.path("message").asText());
+                String message = responseJson.path("message").asText();
+                if (message.equals("Invalid Segment ID")) {
+                    throw new PushcrewResponses.InvalidSegment("Invalid Segment ID " + segmentId);
+                } else if (message.equals("Invalid subscriber IDs present in list.")) {
+                    throw new PushcrewResponses.InvalidSubscribers(message);
+                } else {
+                    throw new PushcrewResponses.PushcrewException(message);
+                }
             }
         }
     }

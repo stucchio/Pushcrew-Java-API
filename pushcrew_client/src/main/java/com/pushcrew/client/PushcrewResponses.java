@@ -34,6 +34,18 @@ public class PushcrewResponses {
         }
     }
 
+    public static class InvalidSegment extends PushcrewException {
+        public InvalidSegment(String message) {
+            super(message);
+        }
+    }
+
+    public static class InvalidSubscribers extends PushcrewException {
+        public InvalidSubscribers(String message) {
+            super(message);
+        }
+    }
+
     private static class ParsedJsonResponse {
         public final String json;
         public final long requestId;
