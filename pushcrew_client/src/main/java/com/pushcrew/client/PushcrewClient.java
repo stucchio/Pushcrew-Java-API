@@ -25,4 +25,10 @@ public interface PushcrewClient {
     public PushcrewResponses.NotificationStatus checkStatus(PushcrewResponse response) throws IOException, PushcrewResponses.PushcrewException;
 
     public PushcrewResponses.NotificationStatus checkStatus(long requestId) throws IOException, PushcrewResponses.PushcrewException;
+
+    public List<Segment> getSegments() throws IOException, PushcrewResponses.PushcrewException;
+
+    public PushcrewResponses.CreateSegmentResponse addSegment(String segmentName) throws IOException, PushcrewResponses.PushcrewException;
+
+    public void deleteSegment(long segmentId) throws IOException, PushcrewResponses.PushcrewException;
 }

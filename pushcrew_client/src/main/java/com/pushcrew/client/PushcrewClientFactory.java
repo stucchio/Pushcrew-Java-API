@@ -11,6 +11,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import okhttp3.*;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +85,12 @@ public class PushcrewClientFactory {
             return authedReq().url(restEndpoint + path).post(body).build();
         }
 
+        private Request deleteRequest(String path, Map<String,String> params) {
+            RequestBody body = RequestBody.create(FormEncoded, urlEncodeUTF8(params));
+            logger.debug("Creating post request for path {} with body {}", restEndpoint + path, urlEncodeUTF8(params));
+            return authedReq().url(restEndpoint + path).delete(body).build();
+        }
+
         public PushcrewResponses.SendResponse sendToAll(String title, String message, String url) throws IOException, PushcrewResponses.PushcrewException {
             Map<String,String> params = new java.util.HashMap<String,String>();
             params.put("title", title);
@@ -116,6 +127,47 @@ public class PushcrewClientFactory {
         public PushcrewResponses.NotificationStatus checkStatus(long requestId) throws IOException, PushcrewResponses.PushcrewException {
             logger.info("Checking status of request {}", requestId);
             return new PushcrewResponses.NotificationStatus(client.newCall(getRequest("checkstatus/" + requestId)).execute());
+        }
+
+        public List<Segment> getSegments() throws IOException, PushcrewResponses.PushcrewException {
+            logger.info("Loading a list of segments for {}", apiKey);
+            Response callResult = client.newCall(getRequest("segments")).execute();
+            String jsonBody = callResult.body().string();
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(jsonBody);
+            String status = rootNode.path("status").asText();
+            if (!status.equals("success")) {
+                throw new PushcrewResponses.InvalidResponse(status);
+            }
+            List<Segment> result = new ArrayList<Segment>();
+            Iterator<JsonNode> segmentList = rootNode.path("segment_list").elements();
+            while (segmentList.hasNext()) {
+                JsonNode jsonSegment = segmentList.next();
+                result.add(new Segment(jsonSegment.path("id").asLong(), jsonSegment.path("name").asText()));
+            }
+            return result;
+        }
+
+        public PushcrewResponses.CreateSegmentResponse addSegment(String segmentName) throws IOException, PushcrewResponses.PushcrewException {
+            logger.info("Creating a segment {}", segmentName);
+            Map<String,String> params = new java.util.HashMap<String,String>();
+            params.put("name", segmentName);
+            return new PushcrewResponses.CreateSegmentResponse(client.newCall(postRequest("segments", params)).execute());
+        }
+
+        public void deleteSegment(long segmentId) throws IOException, PushcrewResponses.PushcrewException {
+            logger.info("Deleting segment {}", segmentId);
+            Response response = client.newCall(deleteRequest("segments/" + segmentId, new java.util.HashMap<String,String>())).execute();
+            String body = response.body().string();
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(body);
+            String status = rootNode.path("status").asText();
+            System.out.println(body);
+            if (status.equals("success")) {
+                return;
+            } else {
+                throw new PushcrewResponses.PushcrewException(rootNode.path("message").asText());
+            }
         }
     }
 }

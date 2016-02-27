@@ -28,6 +28,12 @@ public class PushcrewResponses {
         }
     }
 
+    public static class SegmentAlreadyExists extends PushcrewException {
+        public SegmentAlreadyExists(String message) {
+            super(message);
+        }
+    }
+
     private static class ParsedJsonResponse {
         public final String json;
         public final long requestId;
@@ -48,6 +54,32 @@ public class PushcrewResponses {
         }
         if (response.code() != 200) {
             throw new InvalidResponse("Status code was " + response.code() + ". Body: " + response.body().string());
+        }
+    }
+
+    public static class CreateSegmentResponse {
+        public final String status;
+        public final Long segment_id;
+
+        public CreateSegmentResponse(Response response) throws IOException, PushcrewException {
+            throwCommonExceptions(response);
+            String body = response.body().string();
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(body);
+            status = rootNode.path("status").asText();
+            if (status.equals("failure")) {
+                String message = rootNode.path("message").asText();
+                if (message.equals("A segment with this name already exists.")) {
+                    throw new SegmentAlreadyExists(message);
+                } else {
+                    throw new PushcrewException(message);
+                }
+            }
+            segment_id = rootNode.path("segment_id").asLong();
+        }
+
+        public String toString() {
+            return "CreateSegmentResponse(" + status + ", " + segment_id + ")";
         }
     }
 
