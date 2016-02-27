@@ -110,7 +110,7 @@ public class PushcrewClientFactory {
             params.put("title", title);
             params.put("message", message);
             params.put("url", url);
-            logger.info("Calling sendToAll at {}, title: {}, message: {}, url: {}", restEndpoint, title, message, url);
+            logger.debug("Calling sendToAll at {}, title: {}, message: {}, url: {}", restEndpoint, title, message, url);
             return new PushcrewResponses.SendResponse(client.newCall(postRequest("send/all", params)).execute());
         }
 
@@ -126,7 +126,7 @@ public class PushcrewClientFactory {
             String subscriberListJson = mapper.writeValueAsString(listObj);
 
             params.put("subscriber_list", subscriberListJson);
-            logger.info("Calling sendToList at {}, title: {}, message: {}, url: {}, subscriberList: {}", restEndpoint, title, message, url, subscribers);
+            logger.debug("Calling sendToList at {}, title: {}, message: {}, url: {}, subscriberList: {}", restEndpoint, title, message, url, subscribers);
             return new PushcrewResponses.SendResponse(client.newCall(postRequest("send/list", params)).execute());
         }
 
@@ -139,12 +139,12 @@ public class PushcrewClientFactory {
         }
 
         public PushcrewResponses.NotificationStatus checkStatus(long requestId) throws IOException, PushcrewResponses.PushcrewException {
-            logger.info("Checking status of request {}", requestId);
+            logger.debug("Checking status of request {}", requestId);
             return new PushcrewResponses.NotificationStatus(client.newCall(getRequest("checkstatus/" + requestId)).execute());
         }
 
         public List<Segment> getSegments() throws IOException, PushcrewResponses.PushcrewException {
-            logger.info("Loading a list of segments for {}", apiKey);
+            logger.debug("Loading a list of segments for {}", apiKey);
             Response callResult = client.newCall(getRequest("segments")).execute();
             String jsonBody = callResult.body().string();
             callResult.body().close();
@@ -164,14 +164,30 @@ public class PushcrewClientFactory {
         }
 
         public PushcrewResponses.CreateSegmentResponse addSegment(String segmentName) throws IOException, PushcrewResponses.PushcrewException {
-            logger.info("Creating a segment {}", segmentName);
+            logger.debug("Creating a segment {}", segmentName);
             Map<String,String> params = new java.util.HashMap<String,String>();
             params.put("name", segmentName);
             return new PushcrewResponses.CreateSegmentResponse(client.newCall(postRequest("segments", params)).execute());
         }
 
+        public Segment ensureSegmentExists(String segmentName) throws IOException, PushcrewResponses.PushcrewException {
+            logger.debug("Ensuring segment {} exists", segmentName);
+            try {
+                PushcrewResponses.CreateSegmentResponse segmentResponse = addSegment(segmentName);
+                return new Segment(segmentResponse.segment_id, segmentName);
+            } catch (PushcrewResponses.SegmentAlreadyExists e) {
+                List<Segment> segments = getSegments();
+                for (Segment segment : segments) {
+                    if (segment.name.equals(segmentName)) {
+                        return segment;
+                    }
+                }
+            }
+            throw new PushcrewResponses.PushcrewException("Unable to create segment " + segmentName + " or to find an existing segment.");
+        }
+
         public void deleteSegment(long segmentId) throws IOException, PushcrewResponses.PushcrewException {
-            logger.info("Deleting segment {}", segmentId);
+            logger.debug("Deleting segment {}", segmentId);
             Response response = client.newCall(deleteRequest("segments/" + segmentId, new java.util.HashMap<String,String>())).execute();
             String body = response.body().string();
             ObjectMapper mapper = new ObjectMapper();

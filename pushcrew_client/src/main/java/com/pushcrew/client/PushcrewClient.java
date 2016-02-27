@@ -30,6 +30,8 @@ public interface PushcrewClient {
 
     public PushcrewResponses.CreateSegmentResponse addSegment(String segmentName) throws IOException, PushcrewResponses.PushcrewException;
 
+    public Segment ensureSegmentExists(String segmentName) throws IOException, PushcrewResponses.PushcrewException;
+
     public void deleteSegment(long segmentId) throws IOException, PushcrewResponses.PushcrewException;
 
     public void addSubscribersToSegment(long segmentId, List<String> subscriberIds) throws IOException, PushcrewResponses.PushcrewException;
