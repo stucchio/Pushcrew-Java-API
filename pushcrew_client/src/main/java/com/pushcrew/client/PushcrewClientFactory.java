@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -78,11 +79,24 @@ public class PushcrewClientFactory {
         }
 
         private static final MediaType FormEncoded = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
+        private static final MediaType JsonEncoded = MediaType.parse("application/json; charset=utf-8");
 
         private Request postRequest(String path, Map<String,String> params) {
             RequestBody body = RequestBody.create(FormEncoded, urlEncodeUTF8(params));
             logger.debug("Creating post request for path {} with body {}", restEndpoint + path, urlEncodeUTF8(params));
             return authedReq().url(restEndpoint + path).post(body).build();
+        }
+
+        private Request postJsonRequest(String path, Object obj) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                String json = mapper.writeValueAsString(obj);
+                RequestBody body = RequestBody.create(JsonEncoded, json);
+                logger.debug("Creating post request for path {} with body {}", restEndpoint + path, json);
+                return authedReq().url(restEndpoint + path).post(body).build();
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("this should never occur");
+            }
         }
 
         private Request deleteRequest(String path, Map<String,String> params) {
@@ -133,6 +147,7 @@ public class PushcrewClientFactory {
             logger.info("Loading a list of segments for {}", apiKey);
             Response callResult = client.newCall(getRequest("segments")).execute();
             String jsonBody = callResult.body().string();
+            callResult.body().close();
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(jsonBody);
             String status = rootNode.path("status").asText();
@@ -167,6 +182,22 @@ public class PushcrewClientFactory {
                 return;
             } else {
                 throw new PushcrewResponses.PushcrewException(rootNode.path("message").asText());
+            }
+        }
+
+        public void addSubscribersToSegment(long segmentId, List<String> subscriberIds) throws IOException, PushcrewResponses.PushcrewException {
+            Map<String,String> params = new HashMap<String,String>();
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String,Object> data = new HashMap<String,Object>();
+            data.put("subscriber_list", subscriberIds);
+            params.put("subscriber_list", mapper.writeValueAsString(data));
+
+            Response response = client.newCall(postRequest("segments/" + segmentId + "/subscribers", params)).execute();
+            JsonNode response = mapper.readTree(response.body().string());
+            if (response.path("status").equals("success")) {
+                return;
+            } else {
+                throw new PushcrewResponses.PushcrewException(response.path("message").asText());
             }
         }
     }
