@@ -193,11 +193,11 @@ public class PushcrewClientFactory {
             params.put("subscriber_list", mapper.writeValueAsString(data));
 
             Response response = client.newCall(postRequest("segments/" + segmentId + "/subscribers", params)).execute();
-            JsonNode response = mapper.readTree(response.body().string());
-            if (response.path("status").equals("success")) {
+            JsonNode responseJson = mapper.readTree(response.body().string());
+            if (responseJson.path("status").equals("success")) {
                 return;
             } else {
-                throw new PushcrewResponses.PushcrewException(response.path("message").asText());
+                throw new PushcrewResponses.PushcrewException(responseJson.path("message").asText());
             }
         }
     }
