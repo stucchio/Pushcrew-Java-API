@@ -210,7 +210,7 @@ public class PushcrewClientFactory {
 
             Response response = client.newCall(postRequest("segments/" + segmentId + "/subscribers", params)).execute();
             JsonNode responseJson = mapper.readTree(response.body().string());
-            if (responseJson.path("status").equals("success")) {
+            if (responseJson.path("status").asText().equals("success")) {
                 return;
             } else {
                 String message = responseJson.path("message").asText();
