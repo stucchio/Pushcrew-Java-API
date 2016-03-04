@@ -1,6 +1,6 @@
 package com.pushcrew.client;
 
-class Segment {
+public class Segment {
     public final Long id;
     public final String name;
 
