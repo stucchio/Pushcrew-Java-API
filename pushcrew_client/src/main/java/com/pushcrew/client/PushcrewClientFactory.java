@@ -201,6 +201,24 @@ public class PushcrewClientFactory {
             }
         }
 
+        public List<String> getSubscribers(long segmentId) throws IOException, PushcrewResponses.PushcrewException {
+            Response response = client.newCall(getRequest("segments/" + segmentId + "/subscribers")).execute();
+            String jsonBody = response.body().string();
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(jsonBody);
+            String status = rootNode.path("status").asText();
+            if (!status.equals("success")) {
+                throw new PushcrewResponses.InvalidResponse(status);
+            }
+            List<String> result = new ArrayList<String>();
+            Iterator<JsonNode> segmentList = rootNode.path("subscriber_list").elements();
+            while (segmentList.hasNext()) {
+                JsonNode subscriber = segmentList.next();
+                result.add(subscriber.asText());
+            }
+            return result;
+        }
+
         public void addSubscribersToSegment(long segmentId, List<String> subscriberIds) throws IOException, PushcrewResponses.PushcrewException {
             Map<String,String> params = new HashMap<String,String>();
             ObjectMapper mapper = new ObjectMapper();
