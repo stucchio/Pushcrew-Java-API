@@ -121,7 +121,7 @@ public class PushcrewResponses {
     }
 
 
-    public static class NotificationStatus  {
+    public static class NotificationStatus {
         public final long countDelivered;
         public final long countClicked;
 
