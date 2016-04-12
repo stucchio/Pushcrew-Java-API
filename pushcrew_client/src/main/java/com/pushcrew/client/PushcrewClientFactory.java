@@ -143,6 +143,14 @@ public class PushcrewClientFactory {
             return new PushcrewResponses.NotificationStatus(client.newCall(getRequest("checkstatus/" + requestId)).execute());
         }
 
+        public Map<Long,PushcrewResponses.NotificationStatus> checkStatuses(Set<Long> requestIds) throws IOException, PushcrewResponses.PushcrewException {
+            Map<Long,PushcrewResponses.NotificationStatus> result = new HashMap<Long,PushcrewResponses.NotificationStatus>();
+            for (Long requestId : requestIds) {
+                result.put(requestId, checkStatus(requestId));
+            }
+            return result;
+        }
+
         public List<Segment> getSegments() throws IOException, PushcrewResponses.PushcrewException {
             logger.debug("Loading a list of segments for {}", apiKey);
             Response callResult = client.newCall(getRequest("segments")).execute();

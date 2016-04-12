@@ -26,6 +26,8 @@ public interface PushcrewClient {
 
     public PushcrewResponses.NotificationStatus checkStatus(long requestId) throws IOException, PushcrewResponses.PushcrewException;
 
+    public Map<Long,PushcrewResponses.NotificationStatus> checkStatuses(Set<Long> requestIds) throws IOException, PushcrewResponses.PushcrewException;
+
     public List<Segment> getSegments() throws IOException, PushcrewResponses.PushcrewException;
 
     public List<String> getSubscribers(long segmentId) throws IOException, PushcrewResponses.PushcrewException;
