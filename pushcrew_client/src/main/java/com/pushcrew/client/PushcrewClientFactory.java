@@ -143,6 +143,14 @@ public class PushcrewClientFactory {
             return new PushcrewResponses.NotificationStatus(client.newCall(getRequest("checkstatus/" + requestId)).execute());
         }
 
+        public Map<Long,PushcrewResponses.NotificationStatus> checkStatuses(long[] requestIds) throws IOException, PushcrewResponses.PushcrewException {
+            Set<Long> input = new java.util.HashSet<Long>();
+            for (int i=0;i<requestIds.length;i++) {
+                input.add(requestIds[i]);
+            }
+            return checkStatuses(input);
+        }
+
         public Map<Long,PushcrewResponses.NotificationStatus> checkStatuses(Set<Long> requestIds) throws IOException, PushcrewResponses.PushcrewException {
             Map<Long,PushcrewResponses.NotificationStatus> result = new HashMap<Long,PushcrewResponses.NotificationStatus>();
             for (Long requestId : requestIds) {
